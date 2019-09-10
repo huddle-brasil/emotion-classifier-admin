@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { Component } from 'react'
 import './css/simpleTable.css'
 
@@ -5,68 +6,33 @@ class SimpleTable extends Component{
     constructor(props) {
         super(props)
         this.state = {
-            columns: ['Emoção', 'Quantidade'],
-            rows: [{
-                'Service': 'Veterinary Assitance',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance 1',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance 2',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'Veterinary Assitance',
-                'Cost/Unit': 50,
-                'Unit': '1 Hour',
-                'Units Requested': 12
-            }, {
-                'Service': 'foo',
-                'Unit': null,
-                'Cost/Unit': undefined,
-                'Units Requested': 42
-            }]
-
+            hadRendered: false, 
+            messages: [],
+            columns: [],
         }
     }
+    
     render () {
-        console.log('props: ', this.props.messagesData)
         var messages = []
-        if (Object.entries(this.props.messagesData).length > 0) {
-            for (const [label, qtMessage] of Object.entries(this.props.messagesData)) {
-                messages.push({ label: label, qtMessage: qtMessage })
+        
+        if (this.props.messagesData && Object.entries(this.props.messagesData).length > 0 && !this.state.hadRendered){
+            this.setState({ hadRendered: true })
+            this.setState({ columns: this.props.headers })
+            console.log('this.props.messagesData: ', this.props.messagesData)
+            var index = 0
+            for (const [name, qtMessageEmotions] of Object.entries(this.props.messagesData)) {
+                messages[index] = []
+                messages[index].push(name)
+                for (const qtMessageEmotion of Object.values(qtMessageEmotions)) {
+                    messages[index].push(qtMessageEmotion)
+                }
+                index ++
+                // messages.push({ name, qtMessageEmotions })
             }
+            console.log('messages: ', messages)
+            console.log('IF 1')
+            this.setState({ messages })
+            console.log('props: ', this.props.messagesData)
         }
 
         var dataColumns = this.state.columns;
@@ -78,12 +44,8 @@ class SimpleTable extends Component{
                 })}
             </tr>
         </thead>);
-        var tableBody = messages.map(function (row, index) {
-            return (
-                <tr key={index}>
-                    <td>{row.label}</td>
-                    <td>{row.qtMessage}</td>
-                </tr>)
+        var tableBody = this.state.messages.map(function (row, index) {
+            return (<tr key={index}>{row.map((data, i) => {return <td>{data}</td>})}</tr>)
         });
 
         // Decorate with Bootstrap CSS

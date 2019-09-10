@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { Component } from 'react'
 import SimpleTable from './components/table/SimpleTable';
 import API from './api'
@@ -8,26 +9,42 @@ class App extends Component {
 		super(props)
 		this.state = {
 			messages: '',
-			qtMessages: {}
+			qtMessages: {},
+			qtMessagesGrouped: {},
+			headersQtEmotions: ['Emoção', 'Quantidade'],
+			headersEmotionsByUser: ['Nome', 'Alegria', 'Desgosto', 'Medo', 'Raiva', 'Surpresa', 'Tristeza']
 		}
 	}
 
-	groupByEmotion(messages){
-		let qtMessages = {}
+
+	groupEmotionByUser(messages){
+		let qtMessagesGrouped = {}
+
 		for (const message of messages) {
-			if (!qtMessages[message.label.displayName]) qtMessages[message.label.displayName] = 0
-			qtMessages[message.label.displayName] ++
+			if (!qtMessagesGrouped[message.author.username]) qtMessagesGrouped[message.author.username] = {}
+			if (!qtMessagesGrouped[message.author.username][message.label.displayName]) 
+				qtMessagesGrouped[message.author.username][message.label.displayName] = 0
+
+			qtMessagesGrouped[message.author.username][message.label.displayName]++
 		}
-		this.setState({qtMessages})
-		console.log('Grouped emotions: ', this.state.qtMessages)
+		let emotionNames = this.state.headersEmotionsByUser.map(name => name.toLowerCase()) 
+		emotionNames.shift()
+
+		for (const qtMessageUser of Object.values(qtMessagesGrouped)) for (const emotionName of emotionNames)
+			if (!qtMessageUser[emotionName]) qtMessageUser[emotionName] = 0
+
+		this.setState({ qtMessagesGrouped })
+
+		console.log('qtMessagesGrouped: ', qtMessagesGrouped)
+		console.log('this.state.qtMessagesGrouped: ', this.state.qtMessagesGrouped)
 	}
 
 	componentDidMount(){
-		API.get(`/messages?filter={}`)
+		API.get(`/messages`)
 			.then(res => {	
 				console.log('response: ', res)
 				this.setState({messages: res.data})
-				this.groupByEmotion(this.state.messages)
+				this.groupEmotionByUser(this.state.messages)
 			}) 
 			.catch(error =>{
 				console.error('error: ', error)
@@ -36,7 +53,11 @@ class App extends Component {
 
     render() {
 		return (
-			<SimpleTable messagesData={this.state.qtMessages}></SimpleTable>
+			<div id="emotions">
+				<SimpleTable className='table' 
+					messagesData={this.state.qtMessagesGrouped} 
+					headers={this.state.headersEmotionsByUser}></SimpleTable>
+			</div>
 		)
 	}
 }
